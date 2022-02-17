@@ -24,9 +24,9 @@ import (
 	"github.com/andygrunwald/go-jira"
 	"github.com/go-kit/kit/log"
 	"github.com/pkg/errors"
-	"github.com/prometheus-community/jiralert/pkg/alertmanager"
-	"github.com/prometheus-community/jiralert/pkg/config"
-	"github.com/prometheus-community/jiralert/pkg/template"
+	"github.com/stackhpc/jiralert/pkg/alertmanager"
+	"github.com/stackhpc/jiralert/pkg/config"
+	"github.com/stackhpc/jiralert/pkg/template"
 	"github.com/stretchr/testify/require"
 )
 

@@ -18,7 +18,7 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/prometheus-community/jiralert/pkg/config"
+	"github.com/stackhpc/jiralert/pkg/config"
 )
 
 const (

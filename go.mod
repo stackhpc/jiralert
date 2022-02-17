@@ -1,4 +1,4 @@
-module github.com/prometheus-community/jiralert
+module github.com/stackhpc/jiralert
 
 go 1.15
 
