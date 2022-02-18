@@ -85,19 +85,25 @@ func (r *Receiver) Notify(data *alertmanager.Data, hashJiraLabel bool) (bool, er
 	}
 
 	if issue != nil {
-		// Update summary if needed.
-		if issue.Fields.Summary != issueSummary {
-			retry, err := r.updateSummary(issue.Key, issueSummary)
-			if err != nil {
-				return retry, err
+		// The set of JIRA status categories is fixed, this is a safe check to make.
+		if issue.Fields.Status.StatusCategory.Key != "done" {
+			level.Debug(r.logger).Log("msg", "issue is unresolved, all is done", "key", issue.Key, "label", issueGroupLabel)
+			// Update summary if needed.
+			if issue.Fields.Summary != issueSummary {
+				retry, err := r.updateSummary(issue.Key, issueSummary)
+				if err != nil {
+					return retry, err
+				}
 			}
-		}
 
-		if issue.Fields.Description != issueDesc {
-			retry, err := r.updateDescription(issue.Key, issueDesc)
-			if err != nil {
-				return retry, err
+			if issue.Fields.Description != issueDesc {
+				retry, err := r.updateDescription(issue.Key, issueDesc)
+				if err != nil {
+					return retry, err
+				}
 			}
+
+			return false, nil
 		}
 
 		if len(data.Alerts.Firing()) == 0 {
@@ -114,11 +120,6 @@ func (r *Receiver) Notify(data *alertmanager.Data, hashJiraLabel bool) (bool, er
 			return false, nil
 		}
 
-		// The set of JIRA status categories is fixed, this is a safe check to make.
-		if issue.Fields.Status.StatusCategory.Key != "done" {
-			level.Debug(r.logger).Log("msg", "issue is unresolved, all is done", "key", issue.Key, "label", issueGroupLabel)
-			return false, nil
-		}
 
 		if r.conf.WontFixResolution != "" && issue.Fields.Resolution != nil &&
 			issue.Fields.Resolution.Name == r.conf.WontFixResolution {
@@ -126,8 +127,13 @@ func (r *Receiver) Notify(data *alertmanager.Data, hashJiraLabel bool) (bool, er
 			return false, nil
 		}
 
-		level.Info(r.logger).Log("msg", "issue was recently resolved, reopening", "key", issue.Key, "label", issueGroupLabel)
-		return r.reopen(issue.Key)
+		// Ignore issues in Cancelled status
+		if issue.Fields.Status.Name == "Cancelled" {
+			level.Info(r.logger).Log("msg", "issue was cancelled, not reopening", "key", issue.Key, "label", issueGroupLabel)
+		} else {
+			level.Info(r.logger).Log("msg", "issue was recently resolved, reopening", "key", issue.Key, "label", issueGroupLabel)
+			return r.reopen(issue.Key)
+		}
 	}
 
 	if len(data.Alerts.Firing()) == 0 {
