@@ -270,7 +270,7 @@ func toGroupTicketLabel(groupLabels alertmanager.KV, hashJiraLabel bool) string 
 }
 
 func (r *Receiver) search(project, issueLabel string) (*jira.Issue, bool, error) {
-	query := fmt.Sprintf("project=\"%s\" and labels=%q order by resolutiondate desc", project, issueLabel)
+	query := fmt.Sprintf("project=\"%s\" and labels=%q order by updated desc", project, issueLabel)
 	options := &jira.SearchOptions{
 		Fields:     []string{"summary", "status", "resolution", "resolutiondate", "updated"},
 		MaxResults: 2,
